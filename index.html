@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+>
+
+<title>Nawigacja Roblox</title>
+
+<style>
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #111;
+    font-family: Arial, sans-serif;
+}
+
+canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+}
+
+#status {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+
+    background: rgba(0,0,0,0.75);
+    color: white;
+
+    padding: 9px 13px;
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    z-index: 5;
+}
+
+#changeBus {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+
+    background: rgba(0,0,0,0.75);
+    color: white;
+
+    padding: 9px 13px;
+    border-radius: 8px;
+
+    border: none;
+
+    font-size: 14px;
+
+    display: none;
+
+    z-index: 5;
+}
+
+#login {
+    position: fixed;
+
+    inset: 0;
+
+    background: #111;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 100;
+}
+
+#loginBox {
+    width: calc(100% - 60px);
+    max-width: 350px;
+
+    background: #1d1d1d;
+
+    padding: 25px;
+
+    border-radius: 15px;
+
+    text-align: center;
+}
+
+#loginBox h2 {
+    color: white;
+    margin-top: 0;
+}
+
+#loginBox p {
+    color: #aaa;
+}
+
+#fleetNumber {
+    box-sizing: border-box;
+
+    width: 100%;
+
+    padding: 14px;
+
+    font-size: 20px;
+
+    text-align: center;
+
+    border-radius: 9px;
+    border: 1px solid #444;
+
+    background: #111;
+    color: white;
+
+    outline: none;
+}
+
+#connectButton {
+    width: 100%;
+
+    margin-top: 12px;
+
+    padding: 14px;
+
+    font-size: 17px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #00aaff;
+    color: white;
+}
+
+#error {
+    color: #ff5555;
+    margin-top: 12px;
+    min-height: 20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="map"></canvas>
+
+<div id="status">
+Wybierz autobus
+</div>
+
+<button id="changeBus">
+Zmień autobus
+</button>
+
+<div id="login">
+
+    <div id="loginBox">
+
+        <h2>Nawigacja</h2>
+
+        <p>Wpisz numer taborowy pojazdu</p>
+
+        <input
+            id="fleetNumber"
+            type="text"
+            inputmode="numeric"
+            placeholder="np. 1823"
+            autocomplete="off"
+        >
+
+        <button id="connectButton">
+            Połącz
+        </button>
+
+        <div id="error"></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const canvas =
+    document.getElementById("map")
+
+const ctx =
+    canvas.getContext("2d")
+
+const statusElement =
+    document.getElementById("status")
+
+const login =
+    document.getElementById("login")
+
+const fleetInput =
+    document.getElementById("fleetNumber")
+
+const connectButton =
+    document.getElementById("connectButton")
+
+const changeBusButton =
+    document.getElementById("changeBus")
+
+const errorElement =
+    document.getElementById("error")
+
+
+const DATABASE_URL =
+"https://nawigacja-a8a91-default-rtdb.europe-west1.firebasedatabase.app"
+
+const ROUTE_URL =
+DATABASE_URL + "/routes/718_1.json"
+
+
+let fleetNumber = null
+
+let route = []
+
+let bus = null
+
+let mapData = null
+
+
+
+async function loadRoute() {
+
+    try {
+
+        const response =
+            await fetch(ROUTE_URL)
+
+        const data =
+            await response.json()
+
+        if (!data || !data.points) {
+
+            statusElement.textContent =
+                "Brak trasy"
+
+            return
+
+        }
+
+        route = data.points
+
+        calculateMap()
+
+        draw()
+
+    } catch(error) {
+
+        console.error(error)
+
+        statusElement.textContent =
+            "Błąd pobierania trasy"
+
+    }
+
+}
+
+
+
+async function connectBus() {
+
+    const number =
+        fleetInput.value.trim()
+
+    if (!number) {
+
+        errorElement.textContent =
+            "Wpisz numer taborowy"
+
+        return
+
+    }
+
+    errorElement.textContent =
+        "Łączenie..."
+
+    try {
+
+        const url =
+            DATABASE_URL +
+            "/buses/" +
+            encodeURIComponent(number) +
+            ".json"
+
+        const response =
+            await fetch(url)
+
+        const data =
+            await response.json()
+
+        if (!data) {
+
+            errorElement.textContent =
+                "Nie znaleziono pojazdu " + number
+
+            return
+
+        }
+
+        fleetNumber = number
+
+        bus = data
+
+        login.style.display =
+            "none"
+
+        changeBusButton.style.display =
+            "block"
+
+        statusElement.textContent =
+            "Pojazd " + fleetNumber
+
+        draw()
+
+    } catch(error) {
+
+        console.error(error)
+
+        errorElement.textContent =
+            "Błąd połączenia"
+
+    }
+
+}
+
+
+
+async function loadBus() {
+
+    if (!fleetNumber)
+        return
+
+    try {
+
+        const url =
+            DATABASE_URL +
+            "/buses/" +
+            encodeURIComponent(fleetNumber) +
+            ".json"
+
+        const response =
+            await fetch(url)
+
+        const data =
+            await response.json()
+
+        if (!data) {
+
+            statusElement.textContent =
+                "Pojazd " +
+                fleetNumber +
+                " offline"
+
+            return
+
+        }
+
+        bus = data
+
+        statusElement.textContent =
+            "Pojazd " +
+            fleetNumber
+
+        draw()
+
+    } catch(error) {
+
+        console.error(error)
+
+        statusElement.textContent =
+            "Błąd połączenia"
+
+    }
+
+}
+
+
+
+function resize() {
+
+    const ratio =
+        window.devicePixelRatio || 1
+
+    canvas.width =
+        window.innerWidth * ratio
+
+    canvas.height =
+        window.innerHeight * ratio
+
+    canvas.style.width =
+        window.innerWidth + "px"
+
+    canvas.style.height =
+        window.innerHeight + "px"
+
+    ctx.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+    )
+
+    calculateMap()
+
+    draw()
+
+}
+
+
+
+function calculateMap() {
+
+    if (route.length < 2)
+        return
+
+    const width =
+        window.innerWidth
+
+    const height =
+        window.innerHeight
+
+    const padding = 60
+
+
+    const xs =
+        route.map(p => p.x)
+
+    const zs =
+        route.map(p => p.z)
+
+
+    const minX =
+        Math.min(...xs)
+
+    const maxX =
+        Math.max(...xs)
+
+    const minZ =
+        Math.min(...zs)
+
+    const maxZ =
+        Math.max(...zs)
+
+
+    const rangeX =
+        maxX - minX || 1
+
+    const rangeZ =
+        maxZ - minZ || 1
+
+
+    const scaleX =
+        (width - padding * 2)
+        / rangeX
+
+    const scaleZ =
+        (height - padding * 2)
+        / rangeZ
+
+
+    const scale =
+        Math.min(
+            scaleX,
+            scaleZ
+        )
+
+
+    mapData = {
+        minX,
+        maxX,
+        minZ,
+        maxZ,
+        scale
+    }
+
+}
+
+
+
+function convert(x, z) {
+
+    if (!mapData)
+        return null
+
+    const width =
+        window.innerWidth
+
+    const height =
+        window.innerHeight
+
+
+    const centerX =
+        (
+            mapData.minX +
+            mapData.maxX
+        ) / 2
+
+    const centerZ =
+        (
+            mapData.minZ +
+            mapData.maxZ
+        ) / 2
+
+
+    return {
+
+        x:
+            width / 2 -
+            (x - centerX)
+            * mapData.scale,
+
+        y:
+            height / 2 +
+            (z - centerZ)
+            * mapData.scale
+
+    }
+
+}
+
+
+
+function drawRoute() {
+
+    if (route.length < 2)
+        return
+
+    ctx.beginPath()
+
+    route.forEach(
+        (point, index) => {
+
+            const p =
+                convert(
+                    point.x,
+                    point.z
+                )
+
+            if (index === 0) {
+
+                ctx.moveTo(
+                    p.x,
+                    p.y
+                )
+
+            } else {
+
+                ctx.lineTo(
+                    p.x,
+                    p.y
+                )
+
+            }
+
+        }
+    )
+
+
+    ctx.strokeStyle =
+        "#00aaff"
+
+    ctx.lineWidth = 10
+
+    ctx.lineCap =
+        "round"
+
+    ctx.lineJoin =
+        "round"
+
+    ctx.stroke()
+
+}
+
+
+
+function drawPoints() {
+
+    route.forEach(point => {
+
+        const p =
+            convert(
+                point.x,
+                point.z
+            )
+
+        if (!p)
+            return
+
+        ctx.beginPath()
+
+        ctx.arc(
+            p.x,
+            p.y,
+            5,
+            0,
+            Math.PI * 2
+        )
+
+        ctx.fillStyle =
+            "#ffffff"
+
+        ctx.fill()
+
+    })
+
+}
+
+
+
+function drawBus() {
+
+    if (!bus)
+        return
+
+    const p =
+        convert(
+            bus.x,
+            bus.z
+        )
+
+    if (!p)
+        return
+
+
+    ctx.save()
+
+    ctx.translate(
+        p.x,
+        p.y
+    )
+
+
+    ctx.rotate(
+        (bus.rotation + 180)
+        * Math.PI
+        / 180
+    )
+
+
+    ctx.beginPath()
+
+    ctx.moveTo(
+        0,
+        -20
+    )
+
+    ctx.lineTo(
+        -13,
+        15
+    )
+
+    ctx.lineTo(
+        0,
+        10
+    )
+
+    ctx.lineTo(
+        13,
+        15
+    )
+
+    ctx.closePath()
+
+
+    ctx.fillStyle =
+        "#00ff66"
+
+    ctx.fill()
+
+
+    ctx.lineWidth = 3
+
+    ctx.strokeStyle =
+        "#ffffff"
+
+    ctx.stroke()
+
+
+    ctx.restore()
+
+}
+
+
+
+function draw() {
+
+    ctx.clearRect(
+        0,
+        0,
+        window.innerWidth,
+        window.innerHeight
+    )
+
+    drawRoute()
+
+    drawPoints()
+
+    drawBus()
+
+}
+
+
+
+connectButton.addEventListener(
+    "click",
+    connectBus
+)
+
+
+fleetInput.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Enter") {
+            connectBus()
+        }
+
+    }
+)
+
+
+changeBusButton.addEventListener(
+    "click",
+    function() {
+
+        fleetNumber = null
+
+        bus = null
+
+        login.style.display =
+            "flex"
+
+        changeBusButton.style.display =
+            "none"
+
+        statusElement.textContent =
+            "Wybierz autobus"
+
+        errorElement.textContent =
+            ""
+
+        fleetInput.focus()
+
+        draw()
+
+    }
+)
+
+
+window.addEventListener(
+    "resize",
+    resize
+)
+
+
+resize()
+
+loadRoute()
+
+
+setInterval(
+    loadBus,
+    500
+)
+
+
+setInterval(
+    loadRoute,
+    5000
+)
+
+</script>
+
+</body>
+</html>
