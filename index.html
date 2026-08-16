@@ -11,7 +11,6 @@
 <title>Nawigacja Roblox</title>
 
 <style>
-
 html,
 body {
     margin: 0;
@@ -19,7 +18,7 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: #111;
+    background: #000;
     font-family: Arial, sans-serif;
 }
 
@@ -27,6 +26,7 @@ canvas {
     display: block;
     width: 100vw;
     height: 100vh;
+    background: #000;
 }
 
 #status {
@@ -34,43 +34,89 @@ canvas {
     top: 15px;
     left: 15px;
 
-    background: rgba(0,0,0,0.75);
+    background: rgba(20,20,20,0.92);
     color: white;
 
     padding: 9px 13px;
     border-radius: 8px;
 
     font-size: 14px;
-
     z-index: 5;
 }
 
-#changeBus {
+#buttons {
     position: fixed;
     top: 15px;
     right: 15px;
 
-    background: rgba(0,0,0,0.75);
-    color: white;
-
-    padding: 9px 13px;
-    border-radius: 8px;
-
-    border: none;
-
-    font-size: 14px;
-
     display: none;
+    gap: 8px;
 
     z-index: 5;
 }
 
-#login {
-    position: fixed;
+.topButton {
+    background: rgba(20,20,20,0.92);
+    color: white;
 
+    padding: 9px 13px;
+
+    border-radius: 8px;
+    border: none;
+
+    font-size: 14px;
+}
+
+#info {
+    position: fixed;
+    left: 15px;
+    bottom: 20px;
+
+    background: rgba(20,20,20,0.95);
+    color: white;
+
+    padding: 14px 18px;
+
+    border-radius: 12px;
+
+    min-width: 210px;
+
+    z-index: 5;
+}
+
+#nextLabel {
+    color: #888;
+    font-size: 12px;
+}
+
+#nextStop {
+    font-size: 20px;
+    font-weight: bold;
+
+    margin-top: 4px;
+}
+
+#distance {
+    color: #00aaff;
+
+    font-size: 17px;
+
+    margin-top: 5px;
+}
+
+#routeName {
+    color: #777;
+
+    font-size: 12px;
+
+    margin-top: 8px;
+}
+
+.overlay {
+    position: fixed;
     inset: 0;
 
-    background: #111;
+    background: #000;
 
     display: flex;
     align-items: center;
@@ -79,11 +125,11 @@ canvas {
     z-index: 100;
 }
 
-#loginBox {
+.box {
     width: calc(100% - 60px);
     max-width: 350px;
 
-    background: #1d1d1d;
+    background: #111;
 
     padding: 25px;
 
@@ -92,21 +138,23 @@ canvas {
     text-align: center;
 }
 
-#loginBox h2 {
+.box h2 {
     color: white;
     margin-top: 0;
 }
 
-#loginBox p {
+.box p {
     color: #aaa;
 }
 
-#fleetNumber {
+.input {
     box-sizing: border-box;
 
     width: 100%;
 
     padding: 14px;
+
+    margin-top: 10px;
 
     font-size: 20px;
 
@@ -115,17 +163,20 @@ canvas {
     border-radius: 9px;
     border: 1px solid #444;
 
-    background: #111;
+    background: #000;
     color: white;
 
     outline: none;
 }
 
-#connectButton {
+.input:focus {
+    border-color: #00aaff;
+}
+
+.mainButton {
     width: 100%;
 
-    margin-top: 12px;
-
+    margin-top: 14px;
     padding: 14px;
 
     font-size: 17px;
@@ -137,14 +188,37 @@ canvas {
     color: white;
 }
 
-#error {
+.cancelButton {
+    width: 100%;
+
+    margin-top: 8px;
+    padding: 12px;
+
+    font-size: 16px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #333;
+    color: white;
+}
+
+.error {
     color: #ff5555;
+
     margin-top: 12px;
+
     min-height: 20px;
 }
 
-</style>
+#directionMenu {
+    display: none;
+}
 
+#vehicleMenu {
+    display: none;
+}
+</style>
 </head>
 
 <body>
@@ -152,34 +226,193 @@ canvas {
 <canvas id="map"></canvas>
 
 <div id="status">
-Wybierz autobus
+Wybierz pojazd
 </div>
 
-<button id="changeBus">
-Zmień autobus
-</button>
+<div id="buttons">
 
-<div id="login">
+    <button
+        id="changeDirectionButton"
+        class="topButton"
+    >
+        Zmień kierunek
+    </button>
 
-    <div id="loginBox">
+    <button
+        id="changeBusButton"
+        class="topButton"
+    >
+        Zmień pojazd
+    </button>
+
+</div>
+
+<div id="info">
+
+    <div id="nextLabel">
+        NASTĘPNY PRZYSTANEK
+    </div>
+
+    <div id="nextStop">
+        ---
+    </div>
+
+    <div id="distance">
+        ---
+    </div>
+
+    <div id="routeName">
+        ---
+    </div>
+
+</div>
+
+
+<div
+    id="login"
+    class="overlay"
+>
+
+    <div class="box">
 
         <h2>Nawigacja</h2>
 
-        <p>Wpisz numer taborowy pojazdu</p>
+        <p>
+            Wpisz dane pojazdu i trasy
+        </p>
 
         <input
             id="fleetNumber"
+            class="input"
             type="text"
             inputmode="numeric"
-            placeholder="np. 1823"
+            placeholder="Numer taborowy"
             autocomplete="off"
         >
 
-        <button id="connectButton">
+        <input
+            id="lineNumber"
+            class="input"
+            type="text"
+            inputmode="numeric"
+            placeholder="Linia, np. 718"
+            autocomplete="off"
+        >
+
+        <input
+            id="directionNumber"
+            class="input"
+            type="text"
+            inputmode="numeric"
+            placeholder="Kierunek: 1 lub 2"
+            maxlength="1"
+            autocomplete="off"
+        >
+
+        <button
+            id="connectButton"
+            class="mainButton"
+        >
             Połącz
         </button>
 
-        <div id="error"></div>
+        <div
+            id="loginError"
+            class="error"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<div
+    id="directionMenu"
+    class="overlay"
+>
+
+    <div class="box">
+
+        <h2>Zmień kierunek</h2>
+
+        <p>
+            Wpisz 1 albo 2
+        </p>
+
+        <input
+            id="directionInput"
+            class="input"
+            type="text"
+            inputmode="numeric"
+            placeholder="1 lub 2"
+            maxlength="1"
+            autocomplete="off"
+        >
+
+        <button
+            id="confirmDirection"
+            class="mainButton"
+        >
+            Zmień kierunek
+        </button>
+
+        <button
+            id="cancelDirection"
+            class="cancelButton"
+        >
+            Anuluj
+        </button>
+
+        <div
+            id="directionError"
+            class="error"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<div
+    id="vehicleMenu"
+    class="overlay"
+>
+
+    <div class="box">
+
+        <h2>Zmień pojazd</h2>
+
+        <p>
+            Wpisz nowy numer taborowy
+        </p>
+
+        <input
+            id="vehicleInput"
+            class="input"
+            type="text"
+            inputmode="numeric"
+            placeholder="Numer taborowy"
+            autocomplete="off"
+        >
+
+        <button
+            id="confirmVehicle"
+            class="mainButton"
+        >
+            Zmień pojazd
+        </button>
+
+        <button
+            id="cancelVehicle"
+            class="cancelButton"
+        >
+            Anuluj
+        </button>
+
+        <div
+            id="vehicleError"
+            class="error"
+        ></div>
 
     </div>
 
@@ -188,110 +421,401 @@ Zmień autobus
 
 <script>
 
-const canvas =
-    document.getElementById("map")
-
-const ctx =
-    canvas.getContext("2d")
-
-const statusElement =
-    document.getElementById("status")
-
-const login =
-    document.getElementById("login")
-
-const fleetInput =
-    document.getElementById("fleetNumber")
-
-const connectButton =
-    document.getElementById("connectButton")
-
-const changeBusButton =
-    document.getElementById("changeBus")
-
-const errorElement =
-    document.getElementById("error")
-
-
 const DATABASE_URL =
 "https://nawigacja-a8a91-default-rtdb.europe-west1.firebasedatabase.app"
 
-const ROUTE_URL =
-DATABASE_URL + "/routes/718_1.json"
+
+const canvas =
+document.getElementById("map")
+
+const ctx =
+canvas.getContext("2d")
+
+
+const login =
+document.getElementById("login")
+
+const fleetInput =
+document.getElementById("fleetNumber")
+
+const lineInput =
+document.getElementById("lineNumber")
+
+const directionNumberInput =
+document.getElementById("directionNumber")
+
+const connectButton =
+document.getElementById("connectButton")
+
+const loginError =
+document.getElementById("loginError")
+
+
+const buttons =
+document.getElementById("buttons")
+
+const changeBusButton =
+document.getElementById("changeBusButton")
+
+const changeDirectionButton =
+document.getElementById("changeDirectionButton")
+
+
+const directionMenu =
+document.getElementById("directionMenu")
+
+const directionInput =
+document.getElementById("directionInput")
+
+const confirmDirection =
+document.getElementById("confirmDirection")
+
+const cancelDirection =
+document.getElementById("cancelDirection")
+
+const directionError =
+document.getElementById("directionError")
+
+
+const vehicleMenu =
+document.getElementById("vehicleMenu")
+
+const vehicleInput =
+document.getElementById("vehicleInput")
+
+const confirmVehicle =
+document.getElementById("confirmVehicle")
+
+const cancelVehicle =
+document.getElementById("cancelVehicle")
+
+const vehicleError =
+document.getElementById("vehicleError")
+
+
+const statusElement =
+document.getElementById("status")
+
+const nextStopElement =
+document.getElementById("nextStop")
+
+const distanceElement =
+document.getElementById("distance")
+
+const routeNameElement =
+document.getElementById("routeName")
 
 
 let fleetNumber = null
+let lineNumber = null
+let directionNumber = null
+let currentRouteName = null
 
 let route = []
+let stops = []
 
 let bus = null
-
 let mapData = null
+let routeDistances = []
 
 
+function normalizeArray(data) {
 
-async function loadRoute() {
+    if (!data) {
+        return []
+    }
+
+    if (Array.isArray(data)) {
+        return data
+    }
+
+    return Object.values(data)
+}
+
+
+async function loadRoute(routeName) {
 
     try {
 
+        const url =
+            DATABASE_URL +
+            "/routes/" +
+            encodeURIComponent(routeName) +
+            ".json"
+
         const response =
-            await fetch(ROUTE_URL)
+            await fetch(url)
 
         const data =
             await response.json()
 
         if (!data || !data.points) {
-
-            statusElement.textContent =
-                "Brak trasy"
-
-            return
-
+            return false
         }
 
-        route = data.points
+        route =
+            normalizeArray(
+                data.points
+            )
 
+        stops =
+            normalizeArray(
+                data.stops
+            )
+
+        route.sort(
+            (a,b) =>
+            Number(a.id) -
+            Number(b.id)
+        )
+
+        stops.sort(
+            (a,b) =>
+            Number(a.id) -
+            Number(b.id)
+        )
+
+        currentRouteName =
+            routeName
+
+        calculateRouteDistances()
         calculateMap()
-
+        updateInfo()
         draw()
+
+        return true
 
     } catch(error) {
 
         console.error(error)
 
-        statusElement.textContent =
-            "Błąd pobierania trasy"
-
+        return false
     }
-
 }
 
 
+async function connect() {
 
-async function connectBus() {
-
-    const number =
+    const fleet =
         fleetInput.value.trim()
 
-    if (!number) {
+    const line =
+        lineInput.value.trim()
 
-        errorElement.textContent =
-            "Wpisz numer taborowy"
+    const direction =
+        directionNumberInput.value.trim()
+
+
+    if (!fleet) {
+
+        loginError.textContent =
+        "Wpisz numer taborowy"
 
         return
-
     }
 
-    errorElement.textContent =
-        "Łączenie..."
+
+    if (!line) {
+
+        loginError.textContent =
+        "Wpisz linię"
+
+        return
+    }
+
+
+    if (
+        direction !== "1" &&
+        direction !== "2"
+    ) {
+
+        loginError.textContent =
+        "Kierunek musi być 1 albo 2"
+
+        return
+    }
+
+
+    loginError.textContent =
+    "Łączenie..."
+
+
+    try {
+
+        const busURL =
+            DATABASE_URL +
+            "/buses/" +
+            encodeURIComponent(fleet) +
+            ".json"
+
+
+        const busResponse =
+            await fetch(busURL)
+
+        const busData =
+            await busResponse.json()
+
+
+        if (!busData) {
+
+            loginError.textContent =
+            "Nie znaleziono pojazdu " +
+            fleet
+
+            return
+        }
+
+
+        fleetNumber =
+            fleet
+
+        lineNumber =
+            line
+
+        directionNumber =
+            direction
+
+        bus =
+            busData
+
+
+        const routeName =
+            lineNumber +
+            "_" +
+            directionNumber
+
+
+        const loaded =
+            await loadRoute(
+                routeName
+            )
+
+
+        if (!loaded) {
+
+            loginError.textContent =
+            "Nie znaleziono trasy " +
+            routeName
+
+            return
+        }
+
+
+        login.style.display =
+        "none"
+
+        buttons.style.display =
+        "flex"
+
+        loginError.textContent =
+        ""
+
+        updateInfo()
+        draw()
+
+
+    } catch(error) {
+
+        console.error(error)
+
+        loginError.textContent =
+        "Błąd połączenia"
+    }
+}
+
+
+async function changeDirection() {
+
+    const newDirection =
+        directionInput.value.trim()
+
+
+    if (
+        newDirection !== "1" &&
+        newDirection !== "2"
+    ) {
+
+        directionError.textContent =
+        "Wpisz 1 albo 2"
+
+        return
+    }
+
+
+    const newRoute =
+        lineNumber +
+        "_" +
+        newDirection
+
+
+    directionError.textContent =
+    "Ładowanie..."
+
+
+    const loaded =
+        await loadRoute(
+            newRoute
+        )
+
+
+    if (!loaded) {
+
+        directionError.textContent =
+        "Nie znaleziono trasy " +
+        newRoute
+
+        return
+    }
+
+
+    directionNumber =
+        newDirection
+
+
+    directionMenu.style.display =
+    "none"
+
+
+    directionError.textContent =
+    ""
+
+
+    directionInput.value =
+    ""
+
+
+    updateInfo()
+    draw()
+}
+
+
+async function changeVehicle() {
+
+    const newFleet =
+        vehicleInput.value.trim()
+
+
+    if (!newFleet) {
+
+        vehicleError.textContent =
+        "Wpisz numer taborowy"
+
+        return
+    }
+
+
+    vehicleError.textContent =
+    "Łączenie..."
+
 
     try {
 
         const url =
             DATABASE_URL +
             "/buses/" +
-            encodeURIComponent(number) +
+            encodeURIComponent(newFleet) +
             ".json"
+
 
         const response =
             await fetch(url)
@@ -299,55 +823,68 @@ async function connectBus() {
         const data =
             await response.json()
 
+
         if (!data) {
 
-            errorElement.textContent =
-                "Nie znaleziono pojazdu " + number
+            vehicleError.textContent =
+            "Nie znaleziono pojazdu " +
+            newFleet
 
             return
-
         }
 
-        fleetNumber = number
 
-        bus = data
+        fleetNumber =
+            newFleet
 
-        login.style.display =
-            "none"
+        bus =
+            data
 
-        changeBusButton.style.display =
-            "block"
 
-        statusElement.textContent =
-            "Pojazd " + fleetNumber
+        vehicleMenu.style.display =
+        "none"
 
+
+        vehicleInput.value =
+        ""
+
+
+        vehicleError.textContent =
+        ""
+
+
+        updateInfo()
         draw()
+
 
     } catch(error) {
 
         console.error(error)
 
-        errorElement.textContent =
-            "Błąd połączenia"
+        vehicleError.textContent =
+        "Błąd połączenia"
 
     }
-
 }
-
 
 
 async function loadBus() {
 
-    if (!fleetNumber)
+    if (!fleetNumber) {
         return
+    }
+
 
     try {
 
         const url =
             DATABASE_URL +
             "/buses/" +
-            encodeURIComponent(fleetNumber) +
+            encodeURIComponent(
+                fleetNumber
+            ) +
             ".json"
+
 
         const response =
             await fetch(url)
@@ -355,76 +892,306 @@ async function loadBus() {
         const data =
             await response.json()
 
+
         if (!data) {
 
             statusElement.textContent =
-                "Pojazd " +
-                fleetNumber +
-                " offline"
+            "Pojazd " +
+            fleetNumber +
+            " offline"
 
             return
-
         }
 
-        bus = data
 
-        statusElement.textContent =
-            "Pojazd " +
-            fleetNumber
+        bus =
+            data
 
+
+        updateInfo()
         draw()
+
 
     } catch(error) {
 
         console.error(error)
 
-        statusElement.textContent =
-            "Błąd połączenia"
+    }
+}
 
+
+function calculateRouteDistances() {
+
+    routeDistances = [0]
+
+    let total =
+        0
+
+
+    for (
+        let i = 1;
+        i < route.length;
+        i++
+    ) {
+
+        const dx =
+            route[i].x -
+            route[i - 1].x
+
+
+        const dz =
+            route[i].z -
+            route[i - 1].z
+
+
+        total +=
+            Math.sqrt(
+                dx * dx +
+                dz * dz
+            )
+
+
+        routeDistances.push(
+            total
+        )
+    }
+}
+
+
+function nearestRouteProgress(x,z) {
+
+    if (route.length < 2) {
+        return 0
     }
 
-}
 
+    let bestDistance =
+        Infinity
 
-
-function resize() {
-
-    const ratio =
-        window.devicePixelRatio || 1
-
-    canvas.width =
-        window.innerWidth * ratio
-
-    canvas.height =
-        window.innerHeight * ratio
-
-    canvas.style.width =
-        window.innerWidth + "px"
-
-    canvas.style.height =
-        window.innerHeight + "px"
-
-    ctx.setTransform(
-        ratio,
-        0,
-        0,
-        ratio,
-        0,
+    let bestProgress =
         0
-    )
 
-    calculateMap()
 
-    draw()
+    for (
+        let i = 0;
+        i < route.length - 1;
+        i++
+    ) {
 
+        const a =
+            route[i]
+
+        const b =
+            route[i + 1]
+
+
+        const dx =
+            b.x - a.x
+
+        const dz =
+            b.z - a.z
+
+
+        const lengthSquared =
+            dx * dx +
+            dz * dz
+
+
+        let t =
+            0
+
+
+        if (lengthSquared > 0) {
+
+            t =
+                (
+                    (x - a.x) * dx +
+                    (z - a.z) * dz
+                )
+                /
+                lengthSquared
+        }
+
+
+        t =
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    t
+                )
+            )
+
+
+        const px =
+            a.x +
+            dx * t
+
+
+        const pz =
+            a.z +
+            dz * t
+
+
+        const diffX =
+            x - px
+
+        const diffZ =
+            z - pz
+
+
+        const distanceSquared =
+            diffX * diffX +
+            diffZ * diffZ
+
+
+        if (
+            distanceSquared <
+            bestDistance
+        ) {
+
+            bestDistance =
+                distanceSquared
+
+
+            const segmentLength =
+                Math.sqrt(
+                    lengthSquared
+                )
+
+
+            bestProgress =
+                routeDistances[i] +
+                segmentLength * t
+        }
+    }
+
+
+    return bestProgress
 }
 
+
+function updateInfo() {
+
+    if (
+        fleetNumber &&
+        lineNumber
+    ) {
+
+        statusElement.textContent =
+            "Linia " +
+            lineNumber +
+            " • " +
+            fleetNumber
+    }
+
+
+    routeNameElement.textContent =
+        currentRouteName ||
+        "---"
+
+
+    updateNextStop()
+}
+
+
+function updateNextStop() {
+
+    if (
+        !bus ||
+        route.length < 2 ||
+        stops.length === 0
+    ) {
+
+        nextStopElement.textContent =
+        "---"
+
+        distanceElement.textContent =
+        "---"
+
+        return
+    }
+
+
+    const busProgress =
+        nearestRouteProgress(
+            bus.x,
+            bus.z
+        )
+
+
+    let selectedStop =
+        null
+
+    let selectedProgress =
+        0
+
+
+    for (
+        const stop
+        of stops
+    ) {
+
+        const stopProgress =
+            nearestRouteProgress(
+                stop.x,
+                stop.z
+            )
+
+
+        if (
+            stopProgress >=
+            busProgress - 5
+        ) {
+
+            selectedStop =
+                stop
+
+            selectedProgress =
+                stopProgress
+
+            break
+        }
+    }
+
+
+    if (!selectedStop) {
+
+        nextStopElement.textContent =
+        "Koniec trasy"
+
+        distanceElement.textContent =
+        ""
+
+        return
+    }
+
+
+    const distance =
+        Math.max(
+            0,
+            selectedProgress -
+            busProgress
+        )
+
+
+    nextStopElement.textContent =
+        selectedStop.name ||
+        "Przystanek"
+
+
+    distanceElement.textContent =
+        Math.round(distance) +
+        " stud"
+}
 
 
 function calculateMap() {
 
-    if (route.length < 2)
+    if (route.length < 2) {
         return
+    }
+
 
     const width =
         window.innerWidth
@@ -432,14 +1199,19 @@ function calculateMap() {
     const height =
         window.innerHeight
 
-    const padding = 60
+    const padding =
+        60
 
 
     const xs =
-        route.map(p => p.x)
+        route.map(
+            p => p.x
+        )
 
     const zs =
-        route.map(p => p.z)
+        route.map(
+            p => p.z
+        )
 
 
     const minX =
@@ -463,12 +1235,21 @@ function calculateMap() {
 
 
     const scaleX =
-        (width - padding * 2)
-        / rangeX
+        (
+            width -
+            padding * 2
+        )
+        /
+        rangeX
+
 
     const scaleZ =
-        (height - padding * 2)
-        / rangeZ
+        (
+            height -
+            padding * 2
+        )
+        /
+        rangeZ
 
 
     const scale =
@@ -485,21 +1266,14 @@ function calculateMap() {
         maxZ,
         scale
     }
-
 }
 
 
+function convert(x,z) {
 
-function convert(x, z) {
-
-    if (!mapData)
+    if (!mapData) {
         return null
-
-    const width =
-        window.innerWidth
-
-    const height =
-        window.innerHeight
+    }
 
 
     const centerX =
@@ -507,6 +1281,7 @@ function convert(x, z) {
             mapData.minX +
             mapData.maxX
         ) / 2
+
 
     const centerZ =
         (
@@ -518,36 +1293,52 @@ function convert(x, z) {
     return {
 
         x:
-            width / 2 -
-            (x - centerX)
-            * mapData.scale,
+            window.innerWidth / 2 +
+            (
+                x -
+                centerX
+            )
+            *
+            mapData.scale,
+
 
         y:
-            height / 2 +
-            (z - centerZ)
-            * mapData.scale
+            window.innerHeight / 2 -
+            (
+                z -
+                centerZ
+            )
+            *
+            mapData.scale
 
     }
-
 }
-
 
 
 function drawRoute() {
 
-    if (route.length < 2)
+    if (route.length < 2) {
         return
+    }
+
 
     ctx.beginPath()
 
+
     route.forEach(
-        (point, index) => {
+        (point,index) => {
 
             const p =
                 convert(
                     point.x,
                     point.z
                 )
+
+
+            if (!p) {
+                return
+            }
+
 
             if (index === 0) {
 
@@ -562,68 +1353,82 @@ function drawRoute() {
                     p.x,
                     p.y
                 )
-
             }
-
         }
     )
 
 
     ctx.strokeStyle =
-        "#00aaff"
+    "#00aaff"
 
-    ctx.lineWidth = 10
+    ctx.lineWidth =
+    10
 
     ctx.lineCap =
-        "round"
+    "round"
 
     ctx.lineJoin =
-        "round"
+    "round"
+
 
     ctx.stroke()
-
 }
 
 
+function drawStops() {
 
-function drawPoints() {
-
-    route.forEach(point => {
+    for (
+        const stop
+        of stops
+    ) {
 
         const p =
             convert(
-                point.x,
-                point.z
+                stop.x,
+                stop.z
             )
 
-        if (!p)
-            return
+
+        if (!p) {
+            continue
+        }
+
 
         ctx.beginPath()
+
 
         ctx.arc(
             p.x,
             p.y,
-            5,
+            7,
             0,
             Math.PI * 2
         )
 
+
         ctx.fillStyle =
-            "#ffffff"
+        "#fff"
 
         ctx.fill()
 
-    })
 
+        ctx.lineWidth =
+        3
+
+        ctx.strokeStyle =
+        "#00aaff"
+
+        ctx.stroke()
+    }
 }
-
 
 
 function drawBus() {
 
-    if (!bus)
+    if (!bus) {
         return
+    }
+
 
     const p =
         convert(
@@ -631,11 +1436,14 @@ function drawBus() {
             bus.z
         )
 
-    if (!p)
+
+    if (!p) {
         return
+    }
 
 
     ctx.save()
+
 
     ctx.translate(
         p.x,
@@ -644,55 +1452,59 @@ function drawBus() {
 
 
     ctx.rotate(
-        (bus.rotation + 180)
-        * Math.PI
-        / 180
+        ((bus.rotation || 0) + 180) *
+        Math.PI /
+        180
     )
 
 
     ctx.beginPath()
+
 
     ctx.moveTo(
         0,
         -20
     )
 
+
     ctx.lineTo(
         -13,
         15
     )
+
 
     ctx.lineTo(
         0,
         10
     )
 
+
     ctx.lineTo(
         13,
         15
     )
 
+
     ctx.closePath()
 
 
     ctx.fillStyle =
-        "#00ff66"
+    "#00ff66"
 
     ctx.fill()
 
 
-    ctx.lineWidth = 3
+    ctx.lineWidth =
+    3
 
     ctx.strokeStyle =
-        "#ffffff"
+    "#fff"
 
     ctx.stroke()
 
 
     ctx.restore()
-
 }
-
 
 
 function draw() {
@@ -704,58 +1516,197 @@ function draw() {
         window.innerHeight
     )
 
+
+    ctx.fillStyle =
+    "#000"
+
+
+    ctx.fillRect(
+        0,
+        0,
+        window.innerWidth,
+        window.innerHeight
+    )
+
+
     drawRoute()
-
-    drawPoints()
-
+    drawStops()
     drawBus()
-
 }
 
+
+function resize() {
+
+    const ratio =
+        window.devicePixelRatio || 1
+
+
+    canvas.width =
+        window.innerWidth *
+        ratio
+
+
+    canvas.height =
+        window.innerHeight *
+        ratio
+
+
+    canvas.style.width =
+        window.innerWidth +
+        "px"
+
+
+    canvas.style.height =
+        window.innerHeight +
+        "px"
+
+
+    ctx.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+    )
+
+
+    calculateMap()
+    draw()
+}
 
 
 connectButton.addEventListener(
     "click",
-    connectBus
+    connect
 )
 
 
 fleetInput.addEventListener(
     "keydown",
-    function(event) {
+    event => {
 
         if (event.key === "Enter") {
-            connectBus()
+            lineInput.focus()
         }
+    }
+)
 
+
+lineInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (event.key === "Enter") {
+            directionNumberInput.focus()
+        }
+    }
+)
+
+
+directionNumberInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (event.key === "Enter") {
+            connect()
+        }
+    }
+)
+
+
+changeDirectionButton.addEventListener(
+    "click",
+    () => {
+
+        directionMenu.style.display =
+        "flex"
+
+        directionInput.value =
+        directionNumber || ""
+
+        directionError.textContent =
+        ""
+
+        directionInput.focus()
+    }
+)
+
+
+confirmDirection.addEventListener(
+    "click",
+    changeDirection
+)
+
+
+directionInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (event.key === "Enter") {
+            changeDirection()
+        }
+    }
+)
+
+
+cancelDirection.addEventListener(
+    "click",
+    () => {
+
+        directionMenu.style.display =
+        "none"
+
+        directionError.textContent =
+        ""
     }
 )
 
 
 changeBusButton.addEventListener(
     "click",
-    function() {
+    () => {
 
-        fleetNumber = null
+        vehicleMenu.style.display =
+        "flex"
 
-        bus = null
+        vehicleInput.value =
+        fleetNumber || ""
 
-        login.style.display =
-            "flex"
+        vehicleError.textContent =
+        ""
 
-        changeBusButton.style.display =
-            "none"
+        vehicleInput.focus()
+    }
+)
 
-        statusElement.textContent =
-            "Wybierz autobus"
 
-        errorElement.textContent =
-            ""
+confirmVehicle.addEventListener(
+    "click",
+    changeVehicle
+)
 
-        fleetInput.focus()
 
-        draw()
+vehicleInput.addEventListener(
+    "keydown",
+    event => {
 
+        if (event.key === "Enter") {
+            changeVehicle()
+        }
+    }
+)
+
+
+cancelVehicle.addEventListener(
+    "click",
+    () => {
+
+        vehicleMenu.style.display =
+        "none"
+
+        vehicleError.textContent =
+        ""
     }
 )
 
@@ -768,18 +1719,10 @@ window.addEventListener(
 
 resize()
 
-loadRoute()
-
 
 setInterval(
     loadBus,
     500
-)
-
-
-setInterval(
-    loadRoute,
-    5000
 )
 
 </script>
