@@ -2,7 +2,11 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+>
 
 <title>Nawigacja Roblox</title>
 
@@ -188,64 +192,89 @@ select.input {
 @media (max-width: 600px) {
 
     #status {
-        top: 6px;
-        left: 6px;
-        padding: 5px 7px;
-        border-radius: 5px;
-        font-size: 8px;
-        max-width: 38vw;
+        top: 3px;
+        left: 3px;
+
+        padding: 2px 3px;
+
+        border-radius: 3px;
+
+        font-size: 5px;
+
+        max-width: 28vw;
+
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
     }
 
     #buttons {
-        top: 6px;
-        right: 6px;
-        gap: 3px;
+        top: 3px;
+        right: 3px;
+
+        gap: 1px;
     }
 
     .topButton {
-        padding: 5px 6px;
-        border-radius: 5px;
-        font-size: 8px;
+        padding: 2px 3px;
+
+        border-radius: 3px;
+
+        font-size: 5px;
     }
 
     #info {
-        left: 6px;
-        bottom: 6px;
+        left: 3px;
+        bottom: 3px;
+
         min-width: 0;
-        max-width: 160px;
-        padding: 6px 8px;
-        border-radius: 6px;
+
+        width: 90px;
+        max-width: 90px;
+
+        padding: 3px 4px;
+
+        border-radius: 4px;
     }
 
     #turnLabel,
-    #nextLabel,
-    #turnInstruction,
-    #nextStop,
-    #distance,
-    #routeName {
-        font-size: 7px;
+    #nextLabel {
+        font-size: 4px;
+
+        line-height: 1;
     }
 
     #turnInstruction {
+        font-size: 5px;
+
+        line-height: 1;
+
         margin-top: 1px;
-        margin-bottom: 5px;
-        line-height: 1.1;
+        margin-bottom: 3px;
     }
 
     #nextStop {
+        font-size: 5px;
+
+        line-height: 1;
+
         margin-top: 1px;
-        line-height: 1.1;
     }
 
     #distance {
+        font-size: 5px;
+
+        line-height: 1;
+
         margin-top: 1px;
     }
 
     #routeName {
-        margin-top: 3px;
+        font-size: 4px;
+
+        line-height: 1;
+
+        margin-top: 2px;
     }
 }
 </style>
@@ -463,6 +492,7 @@ document.getElementById("map")
 const ctx =
 canvas.getContext("2d")
 
+
 const gameSelect =
 document.getElementById("gameSelect")
 
@@ -484,6 +514,7 @@ document.getElementById("connectButton")
 const loginError =
 document.getElementById("loginError")
 
+
 const buttons =
 document.getElementById("buttons")
 
@@ -495,6 +526,7 @@ document.getElementById("changeBusButton")
 
 const voiceButton =
 document.getElementById("voiceButton")
+
 
 const directionMenu =
 document.getElementById("directionMenu")
@@ -511,6 +543,7 @@ document.getElementById("cancelDirection")
 const directionError =
 document.getElementById("directionError")
 
+
 const vehicleMenu =
 document.getElementById("vehicleMenu")
 
@@ -525,6 +558,7 @@ document.getElementById("cancelVehicle")
 
 const vehicleError =
 document.getElementById("vehicleError")
+
 
 const statusElement =
 document.getElementById("status")
@@ -543,27 +577,45 @@ document.getElementById("routeName")
 
 
 let selectedGameId = null
+
 let fleetNumber = null
+
 let lineNumber = null
+
 let directionNumber = null
+
 let currentRouteName = null
 
+
 let route = []
+
 let stops = []
+
 let bus = null
+
 let mapData = null
+
 let routeDistances = []
+
 
 let voiceEnabled = true
 
+
 let activeTurnIndex = null
+
 let currentTurnId = null
 
+
 let announced200 = false
+
 let announced100 = false
+
 let announced50 = false
+
 let announcedNow = false
+
 let straightAnnounced = false
+
 let wrongWayAnnounced = false
 
 
@@ -603,17 +655,24 @@ function formatMeters(meters) {
             meters
         )
 
-    if (meters >= 1000) {
+    if (
+        meters >= 1000
+    ) {
 
         return (
             meters / 1000
         ).toFixed(1) + " km"
     }
 
-    if (meters < 20) {
+    if (
+        meters < 20
+    ) {
 
         return (
-            Math.round(meters) +
+            Math.round(
+                meters
+            )
+            +
             " m"
         )
     }
@@ -621,19 +680,26 @@ function formatMeters(meters) {
     return (
         Math.round(
             meters / 10
-        ) *
+        )
+        *
         10
-    ) + " m"
+    )
+    +
+    " m"
 }
 
 
 function speak(text) {
 
-    if (!voiceEnabled) {
+    if (
+        !voiceEnabled
+    ) {
         return
     }
 
-    if (!("speechSynthesis" in window)) {
+    if (
+        !("speechSynthesis" in window)
+    ) {
         return
     }
 
@@ -654,33 +720,54 @@ function speak(text) {
     message.volume =
         1
 
-    window.speechSynthesis.speak(
-        message
-    )
+    window
+        .speechSynthesis
+        .speak(
+            message
+        )
 }
 
 
 function resetTurnAnnouncements() {
 
-    announced200 = false
-    announced100 = false
-    announced50 = false
-    announcedNow = false
+    announced200 =
+        false
+
+    announced100 =
+        false
+
+    announced50 =
+        false
+
+    announcedNow =
+        false
 }
 
 
 function resetNavigationState() {
 
-    activeTurnIndex = null
-    currentTurnId = null
+    activeTurnIndex =
+        null
 
-    straightAnnounced = false
-    wrongWayAnnounced = false
+    currentTurnId =
+        null
+
+    straightAnnounced =
+        false
+
+    wrongWayAnnounced =
+        false
 
     resetTurnAnnouncements()
 
-    if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel()
+    if (
+        "speechSynthesis"
+        in window
+    ) {
+
+        window
+            .speechSynthesis
+            .cancel()
     }
 }
 
@@ -692,33 +779,46 @@ async function loadRoute(routeName) {
         const url =
             DATABASE_URL +
             "/games/" +
-            encodeURIComponent(selectedGameId) +
+            encodeURIComponent(
+                selectedGameId
+            ) +
             "/routes/" +
-            encodeURIComponent(routeName) +
+            encodeURIComponent(
+                routeName
+            ) +
             ".json"
 
+
         const response =
-            await fetch(url)
+            await fetch(
+                url
+            )
+
 
         const data =
             await response.json()
+
 
         if (
             !data ||
             !data.points
         ) {
+
             return false
         }
+
 
         route =
             normalizeArray(
                 data.points
             )
 
+
         stops =
             normalizeArray(
                 data.stops
             )
+
 
         route.sort(
             (a,b) =>
@@ -726,27 +826,37 @@ async function loadRoute(routeName) {
                 Number(b.id)
         )
 
+
         stops.sort(
             (a,b) =>
                 Number(a.id) -
                 Number(b.id)
         )
 
+
         currentRouteName =
             routeName
 
+
         resetNavigationState()
 
+
         calculateRouteDistances()
+
         calculateMap()
+
         updateInfo()
+
         draw()
+
 
         return true
 
     } catch(error) {
 
-        console.error(error)
+        console.error(
+            error
+        )
 
         return false
     }
@@ -758,16 +868,22 @@ async function connect() {
     const gameId =
         gameSelect.value
 
+
     const fleet =
         fleetInput.value.trim()
+
 
     const line =
         lineInput.value.trim()
 
+
     const direction =
         directionNumberInput.value.trim()
 
-    if (!fleet) {
+
+    if (
+        !fleet
+    ) {
 
         loginError.textContent =
             "Wpisz numer taborowy"
@@ -775,13 +891,17 @@ async function connect() {
         return
     }
 
-    if (!line) {
+
+    if (
+        !line
+    ) {
 
         loginError.textContent =
             "Wpisz linię"
 
         return
     }
+
 
     if (
         direction !== "1" &&
@@ -794,29 +914,43 @@ async function connect() {
         return
     }
 
+
     selectedGameId =
         gameId
 
+
     loginError.textContent =
         "Łączenie..."
+
 
     try {
 
         const busURL =
             DATABASE_URL +
             "/games/" +
-            encodeURIComponent(selectedGameId) +
+            encodeURIComponent(
+                selectedGameId
+            ) +
             "/buses/" +
-            encodeURIComponent(fleet) +
+            encodeURIComponent(
+                fleet
+            ) +
             ".json"
 
+
         const busResponse =
-            await fetch(busURL)
+            await fetch(
+                busURL
+            )
+
 
         const busData =
             await busResponse.json()
 
-        if (!busData) {
+
+        if (
+            !busData
+        ) {
 
             loginError.textContent =
                 "Nie znaleziono pojazdu " +
@@ -825,22 +959,38 @@ async function connect() {
             return
         }
 
-        fleetNumber = fleet
-        lineNumber = line
-        directionNumber = direction
-        bus = busData
+
+        fleetNumber =
+            fleet
+
+
+        lineNumber =
+            line
+
+
+        directionNumber =
+            direction
+
+
+        bus =
+            busData
+
 
         const routeName =
             lineNumber +
             "_" +
             directionNumber
 
+
         const loaded =
             await loadRoute(
                 routeName
             )
 
-        if (!loaded) {
+
+        if (
+            !loaded
+        ) {
 
             loginError.textContent =
                 "Nie znaleziono trasy " +
@@ -849,21 +999,29 @@ async function connect() {
             return
         }
 
+
         login.style.display =
             "none"
+
 
         buttons.style.display =
             "flex"
 
+
         loginError.textContent =
             ""
 
+
         updateInfo()
+
         draw()
 
     } catch(error) {
 
-        console.error(error)
+        console.error(
+            error
+        )
+
 
         loginError.textContent =
             "Błąd połączenia"
@@ -876,6 +1034,7 @@ async function changeDirection() {
     const newDirection =
         directionInput.value.trim()
 
+
     if (
         newDirection !== "1" &&
         newDirection !== "2"
@@ -887,20 +1046,26 @@ async function changeDirection() {
         return
     }
 
+
     const newRoute =
         lineNumber +
         "_" +
         newDirection
 
+
     directionError.textContent =
         "Ładowanie..."
+
 
     const loaded =
         await loadRoute(
             newRoute
         )
 
-    if (!loaded) {
+
+    if (
+        !loaded
+    ) {
 
         directionError.textContent =
             "Nie znaleziono trasy " +
@@ -909,19 +1074,25 @@ async function changeDirection() {
         return
     }
 
+
     directionNumber =
         newDirection
+
 
     directionMenu.style.display =
         "none"
 
+
     directionInput.value =
         ""
+
 
     directionError.textContent =
         ""
 
+
     updateInfo()
+
     draw()
 }
 
@@ -931,7 +1102,10 @@ async function changeVehicle() {
     const newFleet =
         vehicleInput.value.trim()
 
-    if (!newFleet) {
+
+    if (
+        !newFleet
+    ) {
 
         vehicleError.textContent =
             "Wpisz numer taborowy"
@@ -939,26 +1113,39 @@ async function changeVehicle() {
         return
     }
 
+
     vehicleError.textContent =
         "Łączenie..."
+
 
     try {
 
         const url =
             DATABASE_URL +
             "/games/" +
-            encodeURIComponent(selectedGameId) +
+            encodeURIComponent(
+                selectedGameId
+            ) +
             "/buses/" +
-            encodeURIComponent(newFleet) +
+            encodeURIComponent(
+                newFleet
+            ) +
             ".json"
 
+
         const response =
-            await fetch(url)
+            await fetch(
+                url
+            )
+
 
         const data =
             await response.json()
 
-        if (!data) {
+
+        if (
+            !data
+        ) {
 
             vehicleError.textContent =
                 "Nie znaleziono pojazdu " +
@@ -967,29 +1154,40 @@ async function changeVehicle() {
             return
         }
 
+
         fleetNumber =
             newFleet
+
 
         bus =
             data
 
+
         resetNavigationState()
+
 
         vehicleMenu.style.display =
             "none"
 
+
         vehicleInput.value =
             ""
+
 
         vehicleError.textContent =
             ""
 
+
         updateInfo()
+
         draw()
 
     } catch(error) {
 
-        console.error(error)
+        console.error(
+            error
+        )
+
 
         vehicleError.textContent =
             "Błąd połączenia"
@@ -1003,26 +1201,39 @@ async function loadBus() {
         !fleetNumber ||
         !selectedGameId
     ) {
+
         return
     }
+
 
     try {
 
         const url =
             DATABASE_URL +
             "/games/" +
-            encodeURIComponent(selectedGameId) +
+            encodeURIComponent(
+                selectedGameId
+            ) +
             "/buses/" +
-            encodeURIComponent(fleetNumber) +
+            encodeURIComponent(
+                fleetNumber
+            ) +
             ".json"
 
+
         const response =
-            await fetch(url)
+            await fetch(
+                url
+            )
+
 
         const data =
             await response.json()
 
-        if (!data) {
+
+        if (
+            !data
+        ) {
 
             statusElement.textContent =
                 "Pojazd " +
@@ -1032,15 +1243,20 @@ async function loadBus() {
             return
         }
 
+
         bus =
             data
 
+
         updateInfo()
+
         draw()
 
     } catch(error) {
 
-        console.error(error)
+        console.error(
+            error
+        )
     }
 }
 
@@ -1050,8 +1266,10 @@ function calculateRouteDistances() {
     routeDistances =
         [0]
 
+
     let total =
         0
+
 
     for (
         let i = 1;
@@ -1063,15 +1281,18 @@ function calculateRouteDistances() {
             route[i].x -
             route[i - 1].x
 
+
         const dz =
             route[i].z -
             route[i - 1].z
+
 
         total +=
             Math.sqrt(
                 dx * dx +
                 dz * dz
             )
+
 
         routeDistances.push(
             total
@@ -1080,25 +1301,34 @@ function calculateRouteDistances() {
 }
 
 
-function nearestRouteInfo(x,z) {
+function nearestRouteInfo(
+    x,
+    z
+) {
 
     if (
         route.length < 2
     ) {
+
         return null
     }
+
 
     let bestDistanceSquared =
         Infinity
 
+
     let bestProgress =
         0
+
 
     let bestSegment =
         0
 
+
     let bestT =
         0
+
 
     for (
         let i = 0;
@@ -1109,23 +1339,29 @@ function nearestRouteInfo(x,z) {
         const a =
             route[i]
 
+
         const b =
             route[i + 1]
+
 
         const dx =
             b.x -
             a.x
 
+
         const dz =
             b.z -
             a.z
+
 
         const lengthSquared =
             dx * dx +
             dz * dz
 
+
         let t =
             0
+
 
         if (
             lengthSquared > 0
@@ -1140,6 +1376,7 @@ function nearestRouteInfo(x,z) {
                 lengthSquared
         }
 
+
         t =
             Math.max(
                 0,
@@ -1149,25 +1386,31 @@ function nearestRouteInfo(x,z) {
                 )
             )
 
+
         const px =
             a.x +
             dx * t
+
 
         const pz =
             a.z +
             dz * t
 
+
         const diffX =
             x -
             px
+
 
         const diffZ =
             z -
             pz
 
+
         const distanceSquared =
             diffX * diffX +
             diffZ * diffZ
+
 
         if (
             distanceSquared <
@@ -1177,22 +1420,27 @@ function nearestRouteInfo(x,z) {
             bestDistanceSquared =
                 distanceSquared
 
+
             bestSegment =
                 i
 
+
             bestT =
                 t
+
 
             const segmentLength =
                 Math.sqrt(
                     lengthSquared
                 )
 
+
             bestProgress =
                 routeDistances[i] +
                 segmentLength * t
         }
     }
+
 
     return {
 
@@ -1213,7 +1461,10 @@ function nearestRouteInfo(x,z) {
 }
 
 
-function nearestRouteProgress(x,z) {
+function nearestRouteProgress(
+    x,
+    z
+) {
 
     const info =
         nearestRouteInfo(
@@ -1221,9 +1472,14 @@ function nearestRouteProgress(x,z) {
             z
         )
 
-    if (!info) {
+
+    if (
+        !info
+    ) {
+
         return 0
     }
+
 
     return info.progress
 }
@@ -1235,8 +1491,10 @@ function isWrongWay() {
         !bus ||
         route.length < 2
     ) {
+
         return false
     }
+
 
     const info =
         nearestRouteInfo(
@@ -1244,41 +1502,54 @@ function isWrongWay() {
             bus.z
         )
 
-    if (!info) {
+
+    if (
+        !info
+    ) {
+
         return false
     }
+
 
     if (
         info.distance >
         WRONG_WAY_MAX_ROUTE_DISTANCE
     ) {
+
         return false
     }
+
 
     const a =
         route[
             info.segment
         ]
 
+
     const b =
         route[
             info.segment + 1
         ]
 
+
     if (
         !a ||
         !b
     ) {
+
         return false
     }
+
 
     const dx =
         b.x -
         a.x
 
+
     const dz =
         b.z -
         a.z
+
 
     const routeRotation =
         Math.atan2(
@@ -1289,11 +1560,13 @@ function isWrongWay() {
         180 /
         Math.PI
 
+
     const busRotation =
         Number(
             bus.rotation ||
             0
         )
+
 
     const difference =
         Math.abs(
@@ -1302,6 +1575,7 @@ function isWrongWay() {
                 routeRotation
             )
         )
+
 
     return (
         difference >=
@@ -1320,17 +1594,21 @@ function calculateTurn(
         current.x -
         previous.x
 
+
     const incomingZ =
         current.z -
         previous.z
+
 
     const outgoingX =
         next.x -
         current.x
 
+
     const outgoingZ =
         next.z -
         current.z
+
 
     const incomingLength =
         Math.sqrt(
@@ -1338,18 +1616,22 @@ function calculateTurn(
             incomingZ * incomingZ
         )
 
+
     const outgoingLength =
         Math.sqrt(
             outgoingX * outgoingX +
             outgoingZ * outgoingZ
         )
 
+
     if (
         incomingLength < 0.1 ||
         outgoingLength < 0.1
     ) {
+
         return null
     }
+
 
     const dot =
         incomingX *
@@ -1357,27 +1639,34 @@ function calculateTurn(
         incomingZ *
         outgoingZ
 
+
     const cross =
         incomingX *
         outgoingZ -
         incomingZ *
         outgoingX
 
+
     const angle =
         Math.atan2(
-            Math.abs(cross),
+            Math.abs(
+                cross
+            ),
             dot
         )
         *
         180 /
         Math.PI
 
+
     if (
         angle <
         TURN_MIN_ANGLE
     ) {
+
         return null
     }
+
 
     return {
 
@@ -1402,34 +1691,50 @@ function getTurnByIndex(
         index >=
         route.length - 1
     ) {
+
         return null
     }
+
 
     const turn =
         calculateTurn(
-            route[index - 1],
-            route[index],
-            route[index + 1]
+            route[
+                index - 1
+            ],
+            route[
+                index
+            ],
+            route[
+                index + 1
+            ]
         )
 
-    if (!turn) {
+
+    if (
+        !turn
+    ) {
+
         return null
     }
+
 
     const turnProgress =
         routeDistances[
             index
         ]
 
+
     const rawDistanceStuds =
         turnProgress -
         busProgress
+
 
     const distanceStuds =
         Math.max(
             0,
             rawDistanceStuds
         )
+
 
     return {
 
@@ -1461,8 +1766,10 @@ function findNextTurn() {
         !bus ||
         route.length < 3
     ) {
+
         return null
     }
+
 
     const busProgress =
         nearestRouteProgress(
@@ -1470,8 +1777,10 @@ function findNextTurn() {
             bus.z
         )
 
+
     if (
-        activeTurnIndex !== null
+        activeTurnIndex !==
+        null
     ) {
 
         const turnProgress =
@@ -1479,9 +1788,11 @@ function findNextTurn() {
                 activeTurnIndex
             ]
 
+
         const finishProgress =
             turnProgress +
             TURN_FINISH_DISTANCE_STUDS
+
 
         if (
             busProgress <=
@@ -1494,7 +1805,11 @@ function findNextTurn() {
                     busProgress
                 )
 
-            if (activeTurn) {
+
+            if (
+                activeTurn
+            ) {
+
                 return activeTurn
             }
 
@@ -1503,15 +1818,19 @@ function findNextTurn() {
             activeTurnIndex =
                 null
 
+
             currentTurnId =
                 null
 
+
             resetTurnAnnouncements()
+
 
             straightAnnounced =
                 false
         }
     }
+
 
     for (
         let i = 1;
@@ -1520,14 +1839,19 @@ function findNextTurn() {
     ) {
 
         const turnProgress =
-            routeDistances[i]
+            routeDistances[
+                i
+            ]
+
 
         if (
             turnProgress <
             busProgress
         ) {
+
             continue
         }
+
 
         const turn =
             getTurnByIndex(
@@ -1535,15 +1859,22 @@ function findNextTurn() {
                 busProgress
             )
 
-        if (!turn) {
+
+        if (
+            !turn
+        ) {
+
             continue
         }
+
 
         activeTurnIndex =
             i
 
+
         return turn
     }
+
 
     return null
 }
@@ -1554,12 +1885,15 @@ function announceStraight() {
     if (
         straightAnnounced
     ) {
+
         return
     }
+
 
     speak(
         "Jedź prosto"
     )
+
 
     straightAnnounced =
         true
@@ -1571,10 +1905,13 @@ function handleVoiceNavigation(
     wrongWay
 ) {
 
-    if (wrongWay) {
+    if (
+        wrongWay
+    ) {
 
         straightAnnounced =
             false
+
 
         if (
             !wrongWayAnnounced
@@ -1584,42 +1921,56 @@ function handleVoiceNavigation(
                 "speechSynthesis"
                 in window
             ) {
+
                 window
                     .speechSynthesis
                     .cancel()
             }
 
+
             speak(
                 "Zawróć"
             )
+
 
             wrongWayAnnounced =
                 true
         }
 
+
         return
     }
+
 
     wrongWayAnnounced =
         false
 
-    if (!turn) {
+
+    if (
+        !turn
+    ) {
 
         currentTurnId =
             null
 
+
         resetTurnAnnouncements()
+
 
         announceStraight()
 
+
         return
     }
+
 
     if (
         turn.passed
     ) {
+
         return
     }
+
 
     if (
         turn.distance >
@@ -1631,13 +1982,16 @@ function handleVoiceNavigation(
         return
     }
 
+
     straightAnnounced =
         false
+
 
     const turnId =
         turn.index +
         "_" +
         turn.direction
+
 
     if (
         turnId !==
@@ -1647,14 +2001,17 @@ function handleVoiceNavigation(
         currentTurnId =
             turnId
 
+
         resetTurnAnnouncements()
     }
+
 
     const directionText =
         turn.direction ===
         "right"
         ? "w prawo"
         : "w lewo"
+
 
     if (
         turn.distance <= 200 &&
@@ -1667,9 +2024,11 @@ function handleVoiceNavigation(
             directionText
         )
 
+
         announced200 =
             true
     }
+
 
     if (
         turn.distance <= 100 &&
@@ -1682,9 +2041,11 @@ function handleVoiceNavigation(
             directionText
         )
 
+
         announced100 =
             true
     }
+
 
     if (
         turn.distance <= 50 &&
@@ -1698,9 +2059,11 @@ function handleVoiceNavigation(
             directionText
         )
 
+
         announced50 =
             true
     }
+
 
     if (
         turn.distance <=
@@ -1718,10 +2081,12 @@ function handleVoiceNavigation(
                 .cancel()
         }
 
+
         speak(
             "Skręć " +
             directionText
         )
+
 
         announcedNow =
             true
@@ -1734,34 +2099,46 @@ function updateNavigationInstruction() {
     const wrongWay =
         isWrongWay()
 
-    if (wrongWay) {
+
+    if (
+        wrongWay
+    ) {
 
         turnInstructionElement.textContent =
             "Zawróć"
 
+
         turnInstructionElement.style.color =
             "#ff3b3b"
+
 
         handleVoiceNavigation(
             null,
             true
         )
 
+
         return
     }
+
 
     turnInstructionElement.style.color =
         "#ffffff"
 
+
     const turn =
         findNextTurn()
+
 
     handleVoiceNavigation(
         turn,
         false
     )
 
-    if (!turn) {
+
+    if (
+        !turn
+    ) {
 
         turnInstructionElement.textContent =
             "Jedź prosto"
@@ -1769,17 +2146,20 @@ function updateNavigationInstruction() {
         return
     }
 
+
     if (
         turn.passed
     ) {
 
         turnInstructionElement.textContent =
-            turn.direction === "right"
+            turn.direction ===
+            "right"
             ? "Skręć w prawo"
             : "Skręć w lewo"
 
         return
     }
+
 
     if (
         turn.distance >
@@ -1792,10 +2172,13 @@ function updateNavigationInstruction() {
         return
     }
 
+
     const directionText =
-        turn.direction === "right"
+        turn.direction ===
+        "right"
         ? "skręć w prawo"
         : "skręć w lewo"
+
 
     if (
         turn.distance <=
@@ -1809,8 +2192,10 @@ function updateNavigationInstruction() {
             +
             directionText.slice(1)
 
+
         return
     }
+
 
     turnInstructionElement.textContent =
         "Za " +
@@ -1833,11 +2218,14 @@ function updateNextStop() {
         nextStopElement.textContent =
             "---"
 
+
         distanceElement.textContent =
             "---"
 
+
         return
     }
+
 
     const busProgress =
         nearestRouteProgress(
@@ -1845,11 +2233,14 @@ function updateNextStop() {
             bus.z
         )
 
+
     let selectedStop =
         null
 
+
     let selectedProgress =
         0
+
 
     for (
         const stop
@@ -1862,6 +2253,7 @@ function updateNextStop() {
                 stop.z
             )
 
+
         if (
             stopProgress >=
             busProgress - 5
@@ -1870,12 +2262,15 @@ function updateNextStop() {
             selectedStop =
                 stop
 
+
             selectedProgress =
                 stopProgress
+
 
             break
         }
     }
+
 
     if (
         !selectedStop
@@ -1884,11 +2279,14 @@ function updateNextStop() {
         nextStopElement.textContent =
             "Koniec trasy"
 
+
         distanceElement.textContent =
             ""
 
+
         return
     }
+
 
     const distanceStuds =
         Math.max(
@@ -1897,13 +2295,16 @@ function updateNextStop() {
             busProgress
         )
 
+
     const distanceMeters =
         distanceStuds *
         STUD_TO_METERS
 
+
     nextStopElement.textContent =
         selectedStop.name ||
         "Przystanek"
+
 
     distanceElement.textContent =
         formatMeters(
@@ -1926,6 +2327,7 @@ function updateInfo() {
             ||
             "Gra"
 
+
         statusElement.textContent =
             gameName +
             " • " +
@@ -1934,9 +2336,11 @@ function updateInfo() {
             fleetNumber
     }
 
+
     routeNameElement.textContent =
         currentRouteName ||
         "---"
+
 
     updateNavigationInstruction()
 
@@ -1949,43 +2353,62 @@ function calculateMap() {
     if (
         route.length < 2
     ) {
+
         return
     }
 
+
     const padding =
         60
+
 
     const xs =
         route.map(
             p => p.x
         )
 
+
     const zs =
         route.map(
             p => p.z
         )
 
+
     const minX =
-        Math.min(...xs)
+        Math.min(
+            ...xs
+        )
+
 
     const maxX =
-        Math.max(...xs)
+        Math.max(
+            ...xs
+        )
+
 
     const minZ =
-        Math.min(...zs)
+        Math.min(
+            ...zs
+        )
+
 
     const maxZ =
-        Math.max(...zs)
+        Math.max(
+            ...zs
+        )
+
 
     const rangeX =
         maxX -
         minX ||
         1
 
+
     const rangeZ =
         maxZ -
         minZ ||
         1
+
 
     const scaleX =
         (
@@ -1995,6 +2418,7 @@ function calculateMap() {
         /
         rangeX
 
+
     const scaleZ =
         (
             window.innerHeight -
@@ -2002,6 +2426,7 @@ function calculateMap() {
         )
         /
         rangeZ
+
 
     mapData = {
 
@@ -2026,11 +2451,18 @@ function calculateMap() {
 }
 
 
-function convert(x,z) {
+function convert(
+    x,
+    z
+) {
 
-    if (!mapData) {
+    if (
+        !mapData
+    ) {
+
         return null
     }
+
 
     const centerX =
         (
@@ -2040,6 +2472,7 @@ function convert(x,z) {
         /
         2
 
+
     const centerZ =
         (
             mapData.minZ +
@@ -2047,6 +2480,7 @@ function convert(x,z) {
         )
         /
         2
+
 
     return {
 
@@ -2059,6 +2493,7 @@ function convert(x,z) {
             )
             *
             mapData.scale,
+
 
         y:
             window.innerHeight /
@@ -2078,13 +2513,19 @@ function drawRoute() {
     if (
         route.length < 2
     ) {
+
         return
     }
 
+
     ctx.beginPath()
 
+
     route.forEach(
-        (point,index) => {
+        (
+            point,
+            index
+        ) => {
 
             const p =
                 convert(
@@ -2092,9 +2533,14 @@ function drawRoute() {
                     point.z
                 )
 
-            if (!p) {
+
+            if (
+                !p
+            ) {
+
                 return
             }
+
 
             if (
                 index === 0
@@ -2115,17 +2561,22 @@ function drawRoute() {
         }
     )
 
+
     ctx.strokeStyle =
         "#00aaff"
+
 
     ctx.lineWidth =
         10
 
+
     ctx.lineCap =
         "round"
 
+
     ctx.lineJoin =
         "round"
+
 
     ctx.stroke()
 }
@@ -2144,11 +2595,17 @@ function drawStops() {
                 stop.z
             )
 
-        if (!p) {
+
+        if (
+            !p
+        ) {
+
             continue
         }
 
+
         ctx.beginPath()
+
 
         ctx.arc(
             p.x,
@@ -2158,16 +2615,21 @@ function drawStops() {
             Math.PI * 2
         )
 
+
         ctx.fillStyle =
             "#fff"
 
+
         ctx.fill()
+
 
         ctx.lineWidth =
             3
 
+
         ctx.strokeStyle =
             "#00aaff"
+
 
         ctx.stroke()
     }
@@ -2176,9 +2638,13 @@ function drawStops() {
 
 function drawBus() {
 
-    if (!bus) {
+    if (
+        !bus
+    ) {
+
         return
     }
+
 
     const p =
         convert(
@@ -2186,16 +2652,23 @@ function drawBus() {
             bus.z
         )
 
-    if (!p) {
+
+    if (
+        !p
+    ) {
+
         return
     }
 
+
     ctx.save()
+
 
     ctx.translate(
         p.x,
         p.y
     )
+
 
     ctx.rotate(
         (
@@ -2207,42 +2680,54 @@ function drawBus() {
         180
     )
 
+
     ctx.beginPath()
+
 
     ctx.moveTo(
         0,
         -20
     )
 
+
     ctx.lineTo(
         -13,
         15
     )
+
 
     ctx.lineTo(
         0,
         10
     )
 
+
     ctx.lineTo(
         13,
         15
     )
 
+
     ctx.closePath()
+
 
     ctx.fillStyle =
         "#00ff66"
 
+
     ctx.fill()
+
 
     ctx.lineWidth =
         3
 
+
     ctx.strokeStyle =
         "#fff"
 
+
     ctx.stroke()
+
 
     ctx.restore()
 }
@@ -2257,8 +2742,10 @@ function draw() {
         window.innerHeight
     )
 
+
     ctx.fillStyle =
         "#000"
+
 
     ctx.fillRect(
         0,
@@ -2267,8 +2754,11 @@ function draw() {
         window.innerHeight
     )
 
+
     drawRoute()
+
     drawStops()
+
     drawBus()
 }
 
@@ -2279,21 +2769,26 @@ function resize() {
         window.devicePixelRatio ||
         1
 
+
     canvas.width =
         window.innerWidth *
         ratio
+
 
     canvas.height =
         window.innerHeight *
         ratio
 
+
     canvas.style.width =
         window.innerWidth +
         "px"
 
+
     canvas.style.height =
         window.innerHeight +
         "px"
+
 
     ctx.setTransform(
         ratio,
@@ -2303,6 +2798,7 @@ function resize() {
         0,
         0
     )
+
 
     calculateMap()
 
@@ -2317,6 +2813,7 @@ voiceButton.addEventListener(
         voiceEnabled =
             !voiceEnabled
 
+
         if (
             voiceEnabled
         ) {
@@ -2324,11 +2821,13 @@ voiceButton.addEventListener(
             voiceButton.textContent =
                 "Głos: ON"
 
+
             voiceButton
                 .classList
                 .add(
                     "on"
                 )
+
 
             speak(
                 "Komunikaty głosowe włączone"
@@ -2339,11 +2838,13 @@ voiceButton.addEventListener(
             voiceButton.textContent =
                 "Głos: OFF"
 
+
             voiceButton
                 .classList
                 .remove(
                     "on"
                 )
+
 
             if (
                 "speechSynthesis"
@@ -2417,12 +2918,15 @@ changeDirectionButton.addEventListener(
         directionMenu.style.display =
             "flex"
 
+
         directionInput.value =
             directionNumber ||
             ""
 
+
         directionError.textContent =
             ""
+
 
         directionInput.focus()
     }
@@ -2457,6 +2961,7 @@ cancelDirection.addEventListener(
         directionMenu.style.display =
             "none"
 
+
         directionError.textContent =
             ""
     }
@@ -2470,12 +2975,15 @@ changeBusButton.addEventListener(
         vehicleMenu.style.display =
             "flex"
 
+
         vehicleInput.value =
             fleetNumber ||
             ""
 
+
         vehicleError.textContent =
             ""
+
 
         vehicleInput.focus()
     }
@@ -2509,6 +3017,7 @@ cancelVehicle.addEventListener(
 
         vehicleMenu.style.display =
             "none"
+
 
         vehicleError.textContent =
             ""
