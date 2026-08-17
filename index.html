@@ -41,6 +41,7 @@ canvas {
     border-radius: 8px;
 
     font-size: 14px;
+
     z-index: 5;
 }
 
@@ -173,6 +174,10 @@ canvas {
     border-color: #00aaff;
 }
 
+select.input {
+    appearance: none;
+}
+
 .mainButton {
     width: 100%;
 
@@ -278,8 +283,23 @@ Wybierz pojazd
         <h2>Nawigacja</h2>
 
         <p>
-            Wpisz dane pojazdu i trasy
+            Wybierz grę oraz wpisz dane
         </p>
+
+        <select
+            id="gameSelect"
+            class="input"
+        >
+
+            <option value="10321306421">
+                MZK Garczyków
+            </option>
+
+            <option value="10694470488">
+                Gra Testowa
+            </option>
+
+        </select>
 
         <input
             id="fleetNumber"
@@ -425,12 +445,21 @@ const DATABASE_URL =
 "https://nawigacja-a8a91-default-rtdb.europe-west1.firebasedatabase.app"
 
 
+const GAME_NAMES = {
+    "10321306421": "MZK Garczyków",
+    "10694470488": "Gra Testowa"
+}
+
+
 const canvas =
 document.getElementById("map")
 
 const ctx =
 canvas.getContext("2d")
 
+
+const gameSelect =
+document.getElementById("gameSelect")
 
 const login =
 document.getElementById("login")
@@ -506,6 +535,8 @@ const routeNameElement =
 document.getElementById("routeName")
 
 
+let selectedGameId = null
+
 let fleetNumber = null
 let lineNumber = null
 let directionNumber = null
@@ -516,6 +547,7 @@ let stops = []
 
 let bus = null
 let mapData = null
+
 let routeDistances = []
 
 
@@ -539,29 +571,37 @@ async function loadRoute(routeName) {
 
         const url =
             DATABASE_URL +
+            "/games/" +
+            encodeURIComponent(selectedGameId) +
             "/routes/" +
             encodeURIComponent(routeName) +
             ".json"
 
+
         const response =
             await fetch(url)
+
 
         const data =
             await response.json()
 
+
         if (!data || !data.points) {
             return false
         }
+
 
         route =
             normalizeArray(
                 data.points
             )
 
+
         stops =
             normalizeArray(
                 data.stops
             )
+
 
         route.sort(
             (a,b) =>
@@ -569,21 +609,29 @@ async function loadRoute(routeName) {
             Number(b.id)
         )
 
+
         stops.sort(
             (a,b) =>
             Number(a.id) -
             Number(b.id)
         )
 
+
         currentRouteName =
             routeName
 
+
         calculateRouteDistances()
+
         calculateMap()
+
         updateInfo()
+
         draw()
 
+
         return true
+
 
     } catch(error) {
 
@@ -596,14 +644,29 @@ async function loadRoute(routeName) {
 
 async function connect() {
 
+    const gameId =
+        gameSelect.value
+
+
     const fleet =
         fleetInput.value.trim()
+
 
     const line =
         lineInput.value.trim()
 
+
     const direction =
         directionNumberInput.value.trim()
+
+
+    if (!gameId) {
+
+        loginError.textContent =
+        "Wybierz grę"
+
+        return
+    }
 
 
     if (!fleet) {
@@ -640,10 +703,16 @@ async function connect() {
     "Łączenie..."
 
 
+    selectedGameId =
+        gameId
+
+
     try {
 
         const busURL =
             DATABASE_URL +
+            "/games/" +
+            encodeURIComponent(selectedGameId) +
             "/buses/" +
             encodeURIComponent(fleet) +
             ".json"
@@ -651,6 +720,7 @@ async function connect() {
 
         const busResponse =
             await fetch(busURL)
+
 
         const busData =
             await busResponse.json()
@@ -669,11 +739,14 @@ async function connect() {
         fleetNumber =
             fleet
 
+
         lineNumber =
             line
 
+
         directionNumber =
             direction
+
 
         bus =
             busData
@@ -704,19 +777,24 @@ async function connect() {
         login.style.display =
         "none"
 
+
         buttons.style.display =
         "flex"
+
 
         loginError.textContent =
         ""
 
+
         updateInfo()
+
         draw()
 
 
     } catch(error) {
 
         console.error(error)
+
 
         loginError.textContent =
         "Błąd połączenia"
@@ -773,18 +851,19 @@ async function changeDirection() {
 
 
     directionMenu.style.display =
-    "none"
+        "none"
 
 
     directionError.textContent =
-    ""
+        ""
 
 
     directionInput.value =
-    ""
+        ""
 
 
     updateInfo()
+
     draw()
 }
 
@@ -812,6 +891,8 @@ async function changeVehicle() {
 
         const url =
             DATABASE_URL +
+            "/games/" +
+            encodeURIComponent(selectedGameId) +
             "/buses/" +
             encodeURIComponent(newFleet) +
             ".json"
@@ -819,6 +900,7 @@ async function changeVehicle() {
 
         const response =
             await fetch(url)
+
 
         const data =
             await response.json()
@@ -837,23 +919,25 @@ async function changeVehicle() {
         fleetNumber =
             newFleet
 
+
         bus =
             data
 
 
         vehicleMenu.style.display =
-        "none"
+            "none"
 
 
         vehicleInput.value =
-        ""
+            ""
 
 
         vehicleError.textContent =
-        ""
+            ""
 
 
         updateInfo()
+
         draw()
 
 
@@ -861,16 +945,19 @@ async function changeVehicle() {
 
         console.error(error)
 
+
         vehicleError.textContent =
         "Błąd połączenia"
-
     }
 }
 
 
 async function loadBus() {
 
-    if (!fleetNumber) {
+    if (
+        !fleetNumber ||
+        !selectedGameId
+    ) {
         return
     }
 
@@ -879,15 +966,16 @@ async function loadBus() {
 
         const url =
             DATABASE_URL +
+            "/games/" +
+            encodeURIComponent(selectedGameId) +
             "/buses/" +
-            encodeURIComponent(
-                fleetNumber
-            ) +
+            encodeURIComponent(fleetNumber) +
             ".json"
 
 
         const response =
             await fetch(url)
+
 
         const data =
             await response.json()
@@ -909,13 +997,13 @@ async function loadBus() {
 
 
         updateInfo()
+
         draw()
 
 
     } catch(error) {
 
         console.error(error)
-
     }
 }
 
@@ -924,8 +1012,7 @@ function calculateRouteDistances() {
 
     routeDistances = [0]
 
-    let total =
-        0
+    let total = 0
 
 
     for (
@@ -968,6 +1055,7 @@ function nearestRouteProgress(x,z) {
     let bestDistance =
         Infinity
 
+
     let bestProgress =
         0
 
@@ -981,15 +1069,19 @@ function nearestRouteProgress(x,z) {
         const a =
             route[i]
 
+
         const b =
             route[i + 1]
 
 
         const dx =
-            b.x - a.x
+            b.x -
+            a.x
+
 
         const dz =
-            b.z - a.z
+            b.z -
+            a.z
 
 
         const lengthSquared =
@@ -997,8 +1089,7 @@ function nearestRouteProgress(x,z) {
             dz * dz
 
 
-        let t =
-            0
+        let t = 0
 
 
         if (lengthSquared > 0) {
@@ -1035,6 +1126,7 @@ function nearestRouteProgress(x,z) {
 
         const diffX =
             x - px
+
 
         const diffZ =
             z - pz
@@ -1078,8 +1170,15 @@ function updateInfo() {
         lineNumber
     ) {
 
+        const gameName =
+            GAME_NAMES[selectedGameId]
+            ||
+            "Gra"
+
+
         statusElement.textContent =
-            "Linia " +
+            gameName +
+            " • " +
             lineNumber +
             " • " +
             fleetNumber
@@ -1106,8 +1205,10 @@ function updateNextStop() {
         nextStopElement.textContent =
         "---"
 
+
         distanceElement.textContent =
         "---"
+
 
         return
     }
@@ -1122,6 +1223,7 @@ function updateNextStop() {
 
     let selectedStop =
         null
+
 
     let selectedProgress =
         0
@@ -1147,8 +1249,10 @@ function updateNextStop() {
             selectedStop =
                 stop
 
+
             selectedProgress =
                 stopProgress
+
 
             break
         }
@@ -1160,8 +1264,10 @@ function updateNextStop() {
         nextStopElement.textContent =
         "Koniec trasy"
 
+
         distanceElement.textContent =
         ""
+
 
         return
     }
@@ -1196,8 +1302,10 @@ function calculateMap() {
     const width =
         window.innerWidth
 
+
     const height =
         window.innerHeight
+
 
     const padding =
         60
@@ -1208,6 +1316,7 @@ function calculateMap() {
             p => p.x
         )
 
+
     const zs =
         route.map(
             p => p.z
@@ -1217,21 +1326,27 @@ function calculateMap() {
     const minX =
         Math.min(...xs)
 
+
     const maxX =
         Math.max(...xs)
 
+
     const minZ =
         Math.min(...zs)
+
 
     const maxZ =
         Math.max(...zs)
 
 
     const rangeX =
-        maxX - minX || 1
+        maxX -
+        minX || 1
+
 
     const rangeZ =
-        maxZ - minZ || 1
+        maxZ -
+        minZ || 1
 
 
     const scaleX =
@@ -1260,10 +1375,13 @@ function calculateMap() {
 
 
     mapData = {
+
         minX,
         maxX,
+
         minZ,
         maxZ,
+
         scale
     }
 }
@@ -1310,7 +1428,6 @@ function convert(x,z) {
             )
             *
             mapData.scale
-
     }
 }
 
@@ -1361,11 +1478,14 @@ function drawRoute() {
     ctx.strokeStyle =
     "#00aaff"
 
+
     ctx.lineWidth =
     10
 
+
     ctx.lineCap =
     "round"
+
 
     ctx.lineJoin =
     "round"
@@ -1409,14 +1529,17 @@ function drawStops() {
         ctx.fillStyle =
         "#fff"
 
+
         ctx.fill()
 
 
         ctx.lineWidth =
         3
 
+
         ctx.strokeStyle =
         "#00aaff"
+
 
         ctx.stroke()
     }
@@ -1491,14 +1614,17 @@ function drawBus() {
     ctx.fillStyle =
     "#00ff66"
 
+
     ctx.fill()
 
 
     ctx.lineWidth =
     3
 
+
     ctx.strokeStyle =
     "#fff"
+
 
     ctx.stroke()
 
@@ -1530,7 +1656,9 @@ function draw() {
 
 
     drawRoute()
+
     drawStops()
+
     drawBus()
 }
 
@@ -1572,6 +1700,7 @@ function resize() {
 
 
     calculateMap()
+
     draw()
 }
 
@@ -1622,11 +1751,14 @@ changeDirectionButton.addEventListener(
         directionMenu.style.display =
         "flex"
 
+
         directionInput.value =
         directionNumber || ""
 
+
         directionError.textContent =
         ""
+
 
         directionInput.focus()
     }
@@ -1657,6 +1789,7 @@ cancelDirection.addEventListener(
         directionMenu.style.display =
         "none"
 
+
         directionError.textContent =
         ""
     }
@@ -1670,11 +1803,14 @@ changeBusButton.addEventListener(
         vehicleMenu.style.display =
         "flex"
 
+
         vehicleInput.value =
         fleetNumber || ""
 
+
         vehicleError.textContent =
         ""
+
 
         vehicleInput.focus()
     }
@@ -1704,6 +1840,7 @@ cancelVehicle.addEventListener(
 
         vehicleMenu.style.display =
         "none"
+
 
         vehicleError.textContent =
         ""
